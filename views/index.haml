@@ -1,0 +1,11 @@
+%html
+  %head
+    %title Validate PLoS LaTeX
+  %body
+    %h1 PLoS LaTeX Validation
+    Please use this app to see if your LaTeX file meets PLoS' requirements
+    %form{:action => "/", :method => "post", :enctype => "multipart/form-data"} 
+      %input{:type => "file", :name => "uploaded_data", :id => "updated_data"}
+      %br
+        %input{:type => "submit", :value => "Submit!"}
+
