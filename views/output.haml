@@ -28,7 +28,7 @@
     %h3 BibTeX Style File
     == #{@bibtex}
     %h3 Sections
-    -@sections.sort{|a,b| a[0]<=>b[0]}.each do |line|
+    -@sections.sort{|a,b| a[0].to_i<=>b[0].to_i}.each do |line|
       == Line: #{line[0]} #{line[1]} <br>
     %h3 Banned Usages
     -@banned.each do |ban|
