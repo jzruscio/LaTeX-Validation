@@ -14,6 +14,7 @@ def get_header(num)
   head_packages = Array.new
   head_header = Array.new
   head_macros = Array.new
+  @macros = Array.new
   macros = 0
   for i in 0..num.length-1 do
     if ($latex[num[i]].match("PLEASE INCLUDE ALL MACROS BELOW"))
@@ -33,6 +34,7 @@ def get_header(num)
     elsif macros == 1
       temp = $latex[num[i]]+"!!!"+num[i].to_s
       $out_tex.puts("#{$latex[num[i]]}\n")
+      @macros.push($latex[num[i]])
       head_macros.push(temp)
     else
       temp = $latex[num[i]]+"!!!"+num[i].to_s
@@ -51,9 +53,14 @@ def get_body(num)
   subsections = Array.new
   inline = Array.new
   @math = Hash.new
+  @math_dollar = Hash.new
   #for i in 0..num.length-1 do
   i=0
   loop do
+    loop do
+      break if !($latex[num[i]].match(/^%/))
+      i+=1
+    end
     if ($latex[num[i]].match("\\\\section"))
       type = "section"
       sec_string = get_info(type, num[i])
@@ -62,27 +69,22 @@ def get_body(num)
       sect = Array.new
       sect.push(sec_temp[0])
       @math[sec_temp[1].to_i] = sect
+      @math_dollar[sec_temp[1].to_i] = sect
     elsif ($latex[num[i]].match("\\\\subsection"))
       type = "subsection"
       subsections.push(get_info(type, num[i]))
     end
-    #if ($latex[num[i]].match("\\$\\$.*\\$\\$"))
-    #  type = "\$\$"
-    #  #print $latex[num[i]],"\n"
-    #  temp = $latex[num[i]]
-    #  $out_tex.puts("#{temp.gsub!(/\$\$(.*)\$\$/, "\$\$\n\\1\n\$\$")}\n")
-    #  #@math+="Line: #{num[i]} #{temp.gsub!(/\$\$(.*)\$\$/, "\$\$<br>\\1\<br>\$\$")}**<br>"
-    #elsif ($latex[num[i]].match("^\s*\\$\\$\s*$"))
-    # #@math+="Line: #{num[i]} #{$latex[num[i]]}<br>"
-    #  i+=1
-    #  while (!$latex[num[i]].match("\s*\\$\\$\s*"))	
-    #    temp=$latex[num[i]]+"!!!"+num[i].to_s
-    #    check_banned_math(temp)
-    #    #@math+="&nbsp;&nbsp;&nbsp;&nbsp;#{$latex[num[i]]}<br>"
-    #    i+=1
-    #  end
-    #  #@math+="#{$latex[num[i]]}<br>" 
-    #  #$math+="Line: #{num[i]} #{$latex[num[i]]}<br>"
+    if ($latex[num[i]].match("\\\\texttt"))
+      type = "texttt"
+      texttt = get_info(type, num[i]).gsub!(/!!!.*/, '')
+      @math[num[i]+1] = "\\texttt{#{texttt}}"
+      @math_dollar[num[i]+1] = "\\texttt{#{texttt}}"
+    elsif ($latex[num[i]].match("\\\\smallcaps"))
+      type = "smallcaps"
+      texttt = get_info(type, num[i]).gsub!(/!!!.*/, '')
+      @math[num[i]+1] = "\\smallcaps{#{texttt}}"
+      @math_dollar[num[i]+1] = "\\smallcaps{#{texttt}}"
+    end
     if ( ($latex[num[i]].match("[^\$]\\$[^\$]")) || ($latex[num[i]].match("^\\$[^\$]") ) )
       math = ''
       math_index = $latex[num[i]].index(/\$/)+1
@@ -90,14 +92,19 @@ def get_body(num)
       in_math = true
       j = i
       temp = Array.new
+      temp_dollar = Array.new
       loop do
         math_letter = $latex[num[j]][math_index,1]
 #print "math_letter = #{math_letter} math_index = #{math_index} in_math = #{in_math} length = #{$latex[num[j]].length}\n"
         if ( math_letter.eql?("\$"))
           if (in_math)
             in_math = false
+            temp_banned = math+'!!!'+num[i].to_s
+            check_banned_math(temp_banned)
             temp.push(math)
+            temp_dollar.push("$#{math}$")
             $out_tex.puts("\\begin{verbatim}#{math}\\end{verbatim} $#{math}$ \\\\")
+            @math_dollar[num[i]+1] = temp_dollar
             @math[num[i]+1] = temp
             math = ''
           elsif (!in_math )
@@ -136,6 +143,7 @@ def get_body(num)
         temp_string = temp.to_s
         array_temp = Array[temp]
         @math[num[i]+1] = array_temp
+        @math_dollar[num[i]+1] = array_temp
         $out_tex.puts(temp)
         i = j
       end
@@ -190,6 +198,7 @@ def get_info(info_type, info_line)
     line = temp.split(/\}/)
     new = line[0]
   else
+print "#{count} closed: #{count_closed}\n"
     while (count < count_closed)
       letter = temp.substr(l,1)
       new = new+letter
@@ -346,18 +355,25 @@ end
 def check_banned_math(in_lines)
   lines = Array.new
   error = Array.new
-  banned = Array.new
-  @banned = Array.new
+  #banned = Array.new
   line = in_lines.split('!!!')
   number=line[1].to_i+1
   if line[0].match("\\\\boldsymbol[{]")
     temp = "Error: Cannot use \\boldsymbol for Math bold font!  Please use \\mathbf!  \n\tLine: #{number} #{line[0]}\n"
     $out_check.puts(temp)
-    @banned.push(temp)
+    @banned.push(temp.gsub!(/\n\t/, '<br>&nbsp;&nbsp;&nbsp;&nbsp;'))
+  elsif line[0].match('^\^')
+    temp = "Error: Must include the base of the superscript in the Math Environment!\n\tLine: #{number} *#{line[0]}*\n"
+    $out_check.puts(temp)
+    @banned.push(temp.gsub!(/\n\t/, '<br>&nbsp;&nbsp;&nbsp;&nbsp;'))
+  elsif line[0].match('^_')
+    temp = "Error: Must include the base of the subscript in the Math Environment!\n\tLine: #{number} *#{line[0]}*\n"
+    $out_check.puts(temp)
+    @banned.push(temp.gsub!(/\n\t/, '<br>&nbsp;&nbsp;&nbsp;&nbsp;'))
   elsif line[0].match("\\over[{]")
     temp = "Error: Cannot use \\over for fractions!  Please use \\frac{top}{botoom}!\n\tLine: #{number} #{line[0]}\n"
    $out_check.puts(temp)
-   @banned.push(temp)
+    @banned.push(temp.gsub!(/\n\t/, '<br>&nbsp;&nbsp;&nbsp;&nbsp;'))
   elsif line[0].match("\\\\bf[{]")
     temp = "Error: Cannot use \\bf for Math bold font!  Please use \\mathbf\n\tLine: #{number} #{line[0]}\n"
     $out_check.puts(temp)
@@ -365,19 +381,19 @@ def check_banned_math(in_lines)
   elsif line[0].match("\\\\textsuperscript")
     temp = "Error: Cannot use \\textsuperscript for superscript!  Please use math mode and the '^' for superscript.\n\tLine: #{number} #{line[0]}\n"
     $out_check.puts(temp)
-    @banned.push(temp)
+    @banned.push(temp.gsub!(/\n\t/, '<br>&nbsp;&nbsp;&nbsp;&nbsp;'))
   elsif line[0].match("\\\\textrm[{]")
     temp = "Error: Cannot use \\textrm for roman text in the Math Environment.  Please use \\mathrm.\n\tLine: #{number} #{line[0]}\n"
     $out_check.puts(temp)
-    @banned.push(temp)
+    @banned.push(temp.gsub!(/\n\t/, '<br>&nbsp;&nbsp;&nbsp;&nbsp;'))
   elsif line[0].match("\\\\text[{]")
     temp = "Error: Cannot use \\text for roman text in the Math Environment.  Please use \\mathrm.\n\tLine: #{number} #{line[0]}\n"
     $out_check.puts(temp)
-    @banned.push(temp)
+    @banned.push(temp.gsub!(/\n\t/, '<br>&nbsp;&nbsp;&nbsp;&nbsp;'))
   elsif line[0].match("\\\\mbox[{]")
     temp = "Error: Cannot use \\mbox for roman tex in the Math Environment.  Please suse \\mathrm.\n\tLine: #{number} #{line[0]}\n"
     $out_check.puts(temp)
-    @banned.push(temp)
+    @banned.push(temp.gsub!(/\n\t/, '<br>&nbsp;&nbsp;&nbsp;&nbsp;'))
   end
 end  
 
@@ -425,10 +441,9 @@ $out_check = File.new("#{ROOT}/tmp/#{params[:uploaded_data][:filename]}.OUTPUT.t
   #Create new array, which hold the lines of the input LaTeX file
   $latex = Array.new
   header = Array.new
-  #packages = Array.new
-  #macros = Array.new
   body = Array.new
   math = Array.new
+  @banned = Array.new
   
   #=begin
   #Initialize the array with the first two lines, which will be checked to see if
@@ -455,14 +470,11 @@ $out_check = File.new("#{ROOT}/tmp/#{params[:uploaded_data][:filename]}.OUTPUT.t
   end
   #Flag to detect \begin{document} 
   start=0
-  #Flag to detect start of Macros section
-  macros_in=0
-  
   #Iterate through file
   for i in 0..$latex.length-1 do
     line = i+1
     #Check for end of header 
-    if $latex[i].eql?("\\begin{document}")
+    if $latex[i].match("\\\\begin{document}")
       start = 1
     end
     
