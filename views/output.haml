@@ -30,6 +30,9 @@
     %h3 Sections
     -@sections.sort{|a,b| a[0].to_i<=>b[0].to_i}.each do |line|
       == Line: #{line[0]} #{line[1]} <br>
+    %h3 Macros
+    -@macros.each do |macro|
+      == #{macro} $#{macro}$ <br>
     %h3 Banned Usages
     -@banned.each do |ban|
       == #{ban} <br>
@@ -37,6 +40,8 @@
     Download LaTeX file of the Math objects below
     %form{:action=>'/tmp', :method=>"get", :enctype=>"multipart/ form-data"}
       %input{:type=>"submit", :name => "file", :value=> "#{@file_name}.MATH.tex"}
+      - @math.sort{|a,b| a[0]<=>b[0]}.each do |line|
+        -#%br #{@math_dollar[line[0]]}
     %table{:rules => "groups", :frame => "box"}
       %tr
         %th{:scope => "col"} Line
@@ -49,9 +54,9 @@
             %tr
               %td{:width => "10%"}= "#{line[0]}"
               %td{:width => "50%"}= "<font color=#ff0000>#{math}</font>"
-              %td{:width => "40%"}= "$#{math}$"
+              %td{:width => "40%"}= "#{@math_dollar[line[0]][line[1].index(math)]}" 
           -else
             %tr
               %td
               %td{:width => "50%"}= "<font color=#ff0000>#{math}</font>"
-              %td{:width => "40%"}= "$#{math}$"
+              %td{:width => "40%"}= "#{@math_dollar[line[0]][line[1].index(math)]}" 
