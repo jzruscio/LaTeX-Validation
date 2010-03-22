@@ -495,6 +495,13 @@ $out_check = File.new("#{ROOT}/tmp/#{params[:uploaded_data][:filename]}.OUTPUT.t
   haml :output
 end
 
+#get '/' do
+#  @file = params["file"]
+#  file = ROOT+'/tmp/'+@file
+#  send_file(file, :disposition => "attachment")
+#  "download started"
+#end
+
 get '/tmp' do
   @file = params["file"]
   file = ROOT+'/tmp/'+@file
