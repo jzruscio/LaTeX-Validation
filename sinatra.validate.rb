@@ -17,7 +17,9 @@ def get_header(num)
   @macros = Array.new
   macros = 0
   for i in 0..num.length-1 do
-    if ($latex[num[i]].match("PLEASE INCLUDE ALL MACROS BELOW"))
+    if ($latex[num[i]].match(/^\s*$/))
+      next
+    elsif ($latex[num[i]].match("PLEASE INCLUDE ALL MACROS BELOW"))
       macros = 1
     elsif ($latex[num[i]].match("END MACROS SECTION"))
       macros = 0
@@ -67,12 +69,18 @@ def get_body(num)
       sections.push(sec_string)
       sec_temp=(sec_string.split('!!!'))
       sect = Array.new
-      sect.push(sec_temp[0])
+      sect.push("Section: #{sec_temp[0]}")
       @math[sec_temp[1].to_i] = sect
       @math_dollar[sec_temp[1].to_i] = sect
     elsif ($latex[num[i]].match("\\\\subsection"))
       type = "subsection"
-      subsections.push(get_info(type, num[i]))
+      sub_string = get_info(type, num[i])
+      subsections.push(sub_string)
+      subs=(sub_string.split('!!!'))
+      sub = Array.new
+      sub.push("Subsection: #{subs[0]}")
+      @math[subs[1].to_i] = sub
+      @math_dollar[subs[1].to_i] = sub
     end
     if ($latex[num[i]].match("\\\\texttt"))
       type = "texttt"
@@ -152,7 +160,7 @@ def get_body(num)
     break if i>=num.length
   end
   check_sections(sections)
-  #check_subsections(subsections)
+  check_subsections(subsections)
 end
 
 #Parser
@@ -282,6 +290,7 @@ def check_packages(in_pack)
       @packages.push("Error! Line #{error[i]}: Package *#{info[i]}* is not approved!")
       $out_check.puts("\tError! Line #{error[i]}: Package *#{info[i]}* is not approved!")
     elsif (packages.has_key?(info[i]))
+      $out_tex.puts("\\usepackage{#{info[i]}}\n")
       packages.delete(info[i])
       count+=1
     end
@@ -303,9 +312,9 @@ def check_sections(secs)
   info = Array.new
   error = Array.new
   @sections = Hash.new
-  for i in 0..secs.length-1 do
-    line = secs[i].split('!!!')
-#print "HI #{line[0]} #{line[1]}\n";
+  #for i in 0..secs.length-1 do
+  secs.each do |sec|
+    line = sec.split('!!!')
     info.push(line[0])
     error.push(line[1])
   end
@@ -327,17 +336,19 @@ def check_sections(secs)
     'Tables' => '1'
   }
   $out_check.puts("Checking Sections\n")
-  for i in 0..info.length-1 do
-    if (!sections.has_key?(info[i]))
-      sec = "Section *#{info[i]}* is not approved!"
-      @sections[error[i]] = sec
-      $out_check.puts("\tError! Line #{error[i]}: Section *#{info[i]}* is not approved!\n") 
+  #for i in 0..info.length-1 do
+  info.each do |section|
+    if (!sections.has_key?(section))
+      sec = "Section *#{section}* is not approved!"
+      @sections[error[info.index(section)]] = sec
+      $out_check.puts("\tError! Line #{error[info.index(section)]}: Section
+*#{section}* is not approved!\n") 
       sect = Array.new
-      sect.push(sec)
+      sect.push(section)
     else
-      sec = "Section *#{info[i]}* is good!"
-      @sections[error[i]] = sec
-      $out_check.puts("\tLine #{error[i]}: Section: #{info[i]}\n")
+      sec = "Section *#{section}* is good!"
+      @sections[error[info.index(section)]] = sec
+      $out_check.puts("\tLine #{error[info.index(section)]}: Section: #{section}\n")
     end
   end
 end
@@ -345,10 +356,12 @@ end
 def check_subsections(secs)
   info = Array.new
   error = Array.new
-  for i in 0..secs.length-1 do
-    line = secs[i].split('!!!')
-    info.push(line[0])
-    error.push(line[1])
+  @subs = Hash.new
+  $out_check.puts("Checking Subsections\n")
+  secs.each do |subs|
+    line = subs.split('!!!')
+    @subs[line[1]] = line[0]
+    $out_check.puts("\tLine #{line[1]}: Subsection: #{line[0]}\n")
   end
 end
 
@@ -399,15 +412,6 @@ end
 
 ##############################
 get '/' do
-##<<-HTML
-##<html>
-##  '<form action="/" method="post" enctype="multipart/form-data" accept-charset="utf-8">
-##         <input type="file" name="uploaded_data" id="uploaded_data">
-##
-##         <p><input type="submit" value="Submit!"></p>
-##       </form>'
-##</html>
-##HTML
   haml :index
 end
 
@@ -416,15 +420,15 @@ post '/' do
   ROOT=Dir.pwd
   FileUtils.mv(params[:uploaded_data][:tempfile].path, "#{ROOT}/tmp/#{params[:uploaded_data][:filename]}")
 
-in_file=File.open("#{ROOT}/tmp/#{params[:uploaded_data][:filename]}", "r")
+  in_file=File.open("#{ROOT}/tmp/#{params[:uploaded_data][:filename]}", "r")
 
-@file_path = ROOT+"/tmp/"+params[:uploaded_data][:filename]
-@file_name = params[:uploaded_data][:filename]
+  file_path = ROOT+"/tmp/"+params[:uploaded_data][:filename]
+  @file_name = params[:uploaded_data][:filename]
 
-#Create output TEX file
-$out_tex = File.new("#{ROOT}/tmp/#{params[:uploaded_data][:filename]}.MATH.tex", "w+")
-#Create output Check file
-$out_check = File.new("#{ROOT}/tmp/#{params[:uploaded_data][:filename]}.OUTPUT.txt", "w+")
+  #Create output TEX file
+  $out_tex = File.new("#{file_path}.MATH.tex", "w+")
+  #Create output Check file
+  $out_check = File.new("#{file_path}.OUTPUT.txt", "w+")
 
 #get '/' do
   
@@ -453,9 +457,6 @@ $out_check = File.new("#{ROOT}/tmp/#{params[:uploaded_data][:filename]}.OUTPUT.t
   $latex[1]=in_file.gets.sub!(/\n/, '')
  
   $out_tex.puts("\\documentclass[10pt]{article}")
-  $out_tex.puts("\\usepackage{amssymb}")
-  $out_tex.puts("\\usepackage{amsmath}")
-
  
   $out_check.puts("Checking Template\n")
   if ( (!$latex[0].eql?(check_line_1)) || (!$latex[1].eql?(check_line_2)) )
@@ -474,7 +475,7 @@ $out_check = File.new("#{ROOT}/tmp/#{params[:uploaded_data][:filename]}.OUTPUT.t
   for i in 0..$latex.length-1 do
     line = i+1
     #Check for end of header 
-    if $latex[i].match("\\\\begin{document}")
+    if $latex[i].match("\\\\begin[{]document[}]")
       start = 1
     end
     
@@ -491,22 +492,20 @@ $out_check = File.new("#{ROOT}/tmp/#{params[:uploaded_data][:filename]}.OUTPUT.t
   $out_tex.puts("\\begin{document}")
   get_body(body) 
   $out_tex.puts("\\end{document}")
-  $output
+  $out_tex.close
+  $out_check.close
+  in_file.close
   haml :output
 end
 
-#get '/' do
-#  @file = params["file"]
-#  file = ROOT+'/tmp/'+@file
-#  send_file(file, :disposition => "attachment")
-#  "download started"
-#end
+get '/output' do
+  output = params["output"]
+  send_file("#{ROOT}/tmp/#{output}", :disposition => "attachment")
+end
 
-get '/tmp' do
-  @file = params["file"]
-  file = ROOT+'/tmp/'+@file
-  send_file(file, :disposition => "attachment")
-  "download started"
+get '/math' do
+  math = params["math"]
+  send_file("#{ROOT}/tmp/#{math}", :disposition => "attachment")
 end
 
 helpers do

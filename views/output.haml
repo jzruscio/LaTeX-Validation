@@ -19,8 +19,8 @@
       })(MathJax.Hub);
   %body
     %h1== $\beta$ Analysis of LaTeX file: #{@file_name}
-    %form{:action=>'/tmp', :method=>"get", :enctype=>"multipart/ form-data"}
-      %input{:type=>"submit", :name => "file", :value=> %"#{@file_name}.OUTPUT.txt"}
+    %form{:action=>'/output', :method=>"get"}
+      %input{:type=>"submit", :name => "output", :value=> "#{@file_name}.OUTPUT.txt"}
     == #{@template}
     %h3 Header
     == #{@header}
@@ -32,6 +32,9 @@
     %h3 Sections
     -@sections.sort{|a,b| a[0].to_i<=>b[0].to_i}.each do |line|
       == Line: #{line[0]} #{line[1]} <br>
+    %h3 Subsections
+    -@subs.sort{|a,b| a[0].to_i<=>b[0].to_i}.each do |line|
+      == Line: #{line[0]} #{line[1]} <br>
     %h3 Macros
     -@macros.each do |macro|
       == #{macro} $#{macro}$ <br>
@@ -40,8 +43,8 @@
       == #{ban} <br>
     %h3 Math
     Download LaTeX file of the Math objects below
-    %form{:action=>'/tmp', :method=>"get", :enctype=>"multipart/ form-data"}
-      %input{:type=>"submit", :name => "file", :value=> "#{@file_name}.MATH.tex"}
+    %form{:action=>'/math', :method=>"get"}
+      %input{:type=>"submit", :name => "math", :value=> "#{@file_name}.MATH.tex"}
       - @math.sort{|a,b| a[0]<=>b[0]}.each do |line|
         -#%br #{@math_dollar[line[0]]}
     %table{:rules => "groups", :frame => "box"}
