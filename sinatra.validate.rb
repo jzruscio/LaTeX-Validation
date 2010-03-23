@@ -85,13 +85,15 @@ def get_body(num)
     if ($latex[num[i]].match("\\\\texttt"))
       type = "texttt"
       texttt = get_info(type, num[i]).gsub!(/!!!.*/, '')
-      @math[num[i]+1] = "\\texttt{#{texttt}}"
-      @math_dollar[num[i]+1] = "\\texttt{#{texttt}}"
-    elsif ($latex[num[i]].match("\\\\smallcaps"))
-      type = "smallcaps"
-      texttt = get_info(type, num[i]).gsub!(/!!!.*/, '')
-      @math[num[i]+1] = "\\smallcaps{#{texttt}}"
-      @math_dollar[num[i]+1] = "\\smallcaps{#{texttt}}"
+      tt = Array["\\texttt{#{texttt}}"]
+      @math[num[i]+1] = tt
+      @math_dollar[num[i]+1] = tt
+    elsif ($latex[num[i]].match("\\\\textsc"))
+      type = "textsc"
+      smallcaps = get_info(type, num[i]).gsub!(/!!!.*/, '')
+      sc = Array["\\textsc{#{smallcaps}}"]
+      @math[num[i]+1] = sc
+      @math_dollar[num[i]+1] = sc
     end
     if ( ($latex[num[i]].match("[^\$]\\$[^\$]")) || ($latex[num[i]].match("^\\$[^\$]") ) )
       math = ''
