@@ -88,12 +88,16 @@ def get_body(num)
       tt = Array["\\texttt{#{texttt}}"]
       @math[num[i]+1] = tt
       @math_dollar[num[i]+1] = tt
+      $out_tex.print("\\begin{verbatim}Line: #{num[i]+1}* #{tt}\\end{verbatim}")
+      $out_tex.print("#{tt}\n")
     elsif ($latex[num[i]].match("\\\\textsc"))
       type = "textsc"
       smallcaps = get_info(type, num[i]).gsub!(/!!!.*/, '')
       sc = Array["\\textsc{#{smallcaps}}"]
       @math[num[i]+1] = sc
       @math_dollar[num[i]+1] = sc
+      $out_tex.print("\\begin{verbatim}Line: #{num[i]+1}* #{sc}\\end{verbatim}")
+      $out_tex.print("#{sc}\n")
     end
     if ( ($latex[num[i]].match("[^\$]\\$[^\$]")) || ($latex[num[i]].match("^\\$[^\$]") ) )
       math = ''
@@ -113,7 +117,7 @@ def get_body(num)
             check_banned_math(temp_banned)
             temp.push(math)
             temp_dollar.push("$#{math}$")
-            $out_tex.puts("\\begin{verbatim}#{math}\\end{verbatim} $#{math}$ \\\\")
+            $out_tex.puts("\\begin{verbatim}Line: #{num[i]+1}* #{math}\\end{verbatim} $#{math}$ \\\\")
             @math_dollar[num[i]+1] = temp_dollar
             @math[num[i]+1] = temp
             math = ''
@@ -141,7 +145,7 @@ def get_body(num)
       if ($latex[num[i]].match(notation) )
         j = i
         temp = Array.new
-        $out_tex.puts("\\begin{verbatim}")
+        $out_tex.puts("\\begin{verbatim}Line: #{num[i]+1}* ")
         while (!$latex[num[j]].match(eqn_ends[eqn_starts.index(notation)]))
           temp.push($latex[num[j]])
           $out_tex.puts($latex[num[j]])
