@@ -1,0 +1,155 @@
+% Template for PLoS Computational Biology alkdf
+% Version 1.0 January 2009
+%
+% To compile to pdf, run:
+% latex plos.template
+% bibtex plos.template
+% latex plos.template
+% latex plos.template
+% dvipdf plos.template
+
+\documentclass[10pt]{article}
+
+% amsmath package, useful for mathematical formulas
+\usepackage{amsmath}
+% amssymb package, useful for mathematical symbols
+\usepackage{amssymb}
+
+% graphicx package, useful for including eps and pdf graphics
+% include graphics with the command \includegraphics
+%\usepackage{graphicx}
+
+% cite package, to clean up citations in the main text. Do not remove.
+\usepackage{cite}
+
+\usepackage{color} 
+
+% Use doublespacing - comment out for single spacing
+%\usepackage{setspace} 
+%\doublespacing
+
+
+% Text layout
+\topmargin 0.0cm
+\oddsidemargin 0.5cm
+\evensidemargin 0.5cm
+\textwidth 16cm 
+\textheight 21cm
+
+% Bold the 'Figure #' in the caption and separate it with a period
+% Captions will be left justified
+%\usepackage[labelfont=bf,labelsep=period,justification=raggedright]{caption}
+
+% Use the PLoS provided bibtex style
+\bibliographystyle{plos2009}
+
+% Remove brackets from numbering in List of References
+\makeatletter
+\renewcommand{\@biblabel}[1]{\quad#1.}
+\makeatother
+
+
+% Leave date blank
+\date{}
+
+\pagestyle{myheadings}
+%% ** EDIT HERE **
+
+\usepackage{ae,aecompl}
+
+TESTING
+\input{notation-def}
+
+%% ** EDIT HERE **
+%% PLEASE INCLUDE ALL MACROS BELOW
+\newcommand{\srreactionsir}{\mathbf{R_{rev}}}
+\newcommand{\xreversearrows}[2]{\overset{#1}{\underset{#2}{\rightleftharpoons}}}
+\newcommand{\reversearrows}{\rightleftharpoons}
+\newcommand{\one}{ \bf{text}}
+\newcommand{text}{ab \over{ cd}}
+\newcommand{\test}{ \boldsymbol{TEST}}
+\newcommand{\trial}{b\textsuperscript}
+%% END MACROS SECTION
+
+\begin{document}
+
+% Title must be 150 characters or less
+\begin{flushleft}
+{\Large
+\textbf{Temperature Control of Fimbriation Circuit Switch in Uropathogenic \emph{Escherichia coli}: Quantitative Analysis via Automated Model Abstraction}
+}
+% Insert Author names, affiliations and corresponding author email.
+\\
+Hiroyuki Kuwahara$^{1}$, 
+Chris J.\ Myers$^{2}$, 
+Michael S.\ Samoilov$^{3,\ast}$
+\\
+\bf{1} Ray and Stephanie Lane Center for Computational Biology, Carnegie
+Mellon University, Pittsburgh, PA 15213, U.S.A.
+\\
+\bf{2} Department of Electrical and Computer Engineering, University of Utah, Salt Lake City, UT 84112, U.S.A.
+\\
+\bf{3} QB3: California Institute for Quantitative Biosciences, University of California, Berkeley, CA 94720, U.S.A.
+\\
+$\ast$ E-mail: mssamoilov@lbl.gov
+\end{flushleft}
+
+
+
+% Please keep the abstract between 250 and 300 words
+\section*{Abstract}
+\section*{Author Summary}
+\section*{Introduction}
+$\beta$
+
+$$ Display Equation$$
+
+$$ 
+Display Equation
+$$
+
+$$
+\frac{\partial \mathcal{M}}{\partial t}=h(U,V) \mathbf{N}
+$$
+In order to reduce the number of parameters, we assume that Chargaff's second
+parity rule holds, so that
+$\pi(\mathrm{A}) = \pi(\mathrm{T})$ and $\pi(\mathrm{G}) = \pi(\mathrm{C})$.
+Thus, the mutation model only depends on the GC usage,
+
+where $\mathbf{N}$ is the normal to the surface and $h$ a function of the two morphogens.
+The simplest case for $h$ that we have adopted in the following is a linear function of one morphogen:
+$$h(U,V)=KV$$
+where $K$ is a parameter in $\mathbb{R}$.\\
+
+$\partial_t U $ ($\partial_t V$ 
+$\textrm{div}(\mathbf{a}U)$ where $\mathbf{a}(M,t)=\frac{dM}{dt}$
+
+$\sqrt{g_t}$
+
+\section*{Acknowledgments}
+
+
+%\section*{References}
+% The bibtex filename
+\bibliography{type1pili_MS_new}
+
+
+\clearpage
+
+\section*{Figure Legends}
+%\begin{figure}[!ht]
+
+\begin{figure}[!ht]
+\begin{center}
+\includegraphics[width=12.0cm]{fig-4}
+\end{center}
+\caption{
+{\bf Detailed \emph{fim} switch configuration model.} 
+An abstracted species, \emph{switch}, captures the switching events.
+}
+\label{fig:fig-switch-conf-model}
+\end{figure}
+
+\section{Not Approved}
+
+\end{document}

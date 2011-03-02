@@ -1,0 +1,10 @@
+This is a validation script for LaTeX formatted articles submitted to the journal.  
+
+The output of the app checks that the supplied template is not changed, ex, no extra packages, header information, etc.  
+It also allows for the easy comparison of the converted LaTeX and the raw LaTeX.
+
+MathJax is used for the LaTeX conversion.  
+
+Please refer to the LaTeX guidelines: http://www.ploscompbiol.org/static/latexGuidelines.action.
+
+To test, upload test.tex.
